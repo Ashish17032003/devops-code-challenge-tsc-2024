@@ -1,0 +1,11 @@
+localhost {
+    tls /data/localhost.crt /data/localhost.key {
+        ca_root   /data/rootCA.crt
+    }
+    handle_path /api/* {
+        reverse_proxy backend:3000
+    }
+    handle_path /client/* {
+        reverse_proxy client
+    }
+}

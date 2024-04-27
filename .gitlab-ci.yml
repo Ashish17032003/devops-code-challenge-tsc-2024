@@ -1,0 +1,59 @@
+stages:
+  - test
+  - build
+
+variables:
+  DOCKER_HUB_USERNAME: your_dockerhub_username
+  DOCKER_HUB_PASSWORD: your_dockerhub_password
+  DOCKER_HUB_REPO_FRONTEND: your_frontend_dockerhub_repo
+  DOCKER_HUB_REPO_BACKEND: your_backend_dockerhub_repo
+
+test_frontend:
+  stage: test
+  script:
+    - cd client
+    - npm install
+    - npm run test
+
+test_backend:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - cd server
+    - python -m pytest
+
+build_frontend:
+  stage: build
+  script:
+    - cd client
+    - npm install
+    - npm run build
+    - docker build -t $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA .
+  only:
+    - main
+
+build_backend:
+  stage: build
+  script:
+    - cd server
+    - docker build -t $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA .
+  only:
+    - main
+
+docker_push_frontend:
+  stage: build
+  script:
+    - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    - docker push $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA
+  only:
+    - main
+
+docker_push_backend:
+  stage: build
+  script:
+    - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    - docker push $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA
+  only:
+    - main
+#  branches user action trigger outside main branch
+#  build and deploy part depends on step is missing
