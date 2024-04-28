@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: server-config
+  labels:
+    app: server
+data:
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_DATABASE: "cern"
+  DB_USERNAME: "tech_user"
+  DB_PASSWORD: "postgres"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  labels:
+    app: server
+spec:
+  type: NodePort
+  ports:
+    - port: 3000
+  selector:
+    app: server
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: server
+          image: "backend:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: server-config

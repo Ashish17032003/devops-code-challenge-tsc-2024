@@ -5,7 +5,7 @@ RUN pip install -r requirements.txt
 COPY server ./server
 EXPOSE 3000
 ENV DB_HOST postgres
-ENV DB_PORT 5439
+ENV DB_PORT 5432
 ENV DB_DATABASE cern
 ENV DB_USERNAME tech_user
 ENV DB_PASSWORD postgres
