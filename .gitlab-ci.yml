@@ -14,6 +14,10 @@ test_frontend:
     - cd client
     - npm install
     - npm run test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 
 test_backend:
   stage: test
@@ -21,6 +25,10 @@ test_backend:
     - pip install -r requirements.txt
     - cd server
     - python -m pytest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 
 build_frontend:
   stage: build
@@ -29,31 +37,38 @@ build_frontend:
     - npm install
     - npm run build
     - docker build -t $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA .
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 
 build_backend:
   stage: build
   script:
-    - cd server
     - docker build -t $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA .
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 
 docker_push_frontend:
   stage: build
   script:
     - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
     - docker push $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 
 docker_push_backend:
   stage: build
   script:
     - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
     - docker push $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: always
+    - when: manual
 #  branches user action trigger outside main branch
 #  build and deploy part depends on step is missing
