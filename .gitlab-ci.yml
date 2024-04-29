@@ -1,74 +1,53 @@
+# A test stage that will run the tests for the frontend (use npm run test) and for the backend (use python -m pytest).
+# A build stage that will build Docker images for both frontend and backend
+
 stages:
   - test
   - build
 
-variables:
-  DOCKER_HUB_USERNAME: your_dockerhub_username
-  DOCKER_HUB_PASSWORD: your_dockerhub_password
-  DOCKER_HUB_REPO_FRONTEND: your_frontend_dockerhub_repo
-  DOCKER_HUB_REPO_BACKEND: your_backend_dockerhub_repo
+services:
+  - docker:dind
 
 test_frontend:
   stage: test
+  image: node:20
   script:
     - cd client
     - npm install
+    - echo "Running frontend tests"
     - npm run test
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
+  only:
+    - main
 
 test_backend:
   stage: test
+  image: python:3.10
   script:
     - pip install -r requirements.txt
     - cd server
+    - echo "Running backend tests"
     - python -m pytest
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
+  only:
+    - main
 
 build_frontend:
   stage: build
   script:
     - cd client
-    - npm install
-    - npm run build
-    - docker build -t $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
+    - echo "Building frontend Docker image"
+    - docker build . -t client
+  only:
+    - main
+  needs:
+    - test_frontend # Build stage depends on test_frontend job
 
 build_backend:
   stage: build
   script:
-    - docker build -t $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
-
-docker_push_frontend:
-  stage: build
-  script:
-    - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    - docker push $DOCKER_HUB_REPO_FRONTEND:$CI_COMMIT_SHA
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
-
-docker_push_backend:
-  stage: build
-  script:
-    - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    - docker push $DOCKER_HUB_REPO_BACKEND:$CI_COMMIT_SHA
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - when: always
-    - when: manual
-#  branches user action trigger outside main branch
-#  build and deploy part depends on step is missing
+    - cd server
+    - echo "Building backend Docker image"
+    - docker build . -t backend
+  only:
+    - main
+  needs:
+    - test_backend # Build stage depends on test_backend job
