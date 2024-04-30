@@ -5,7 +5,10 @@ localhost {
     handle_path /api/* {
         reverse_proxy backend:3000
     }
-    handle_path /client/* {
+    handle /client/* {
+        reverse_proxy client
+    }
+    handle / {
         reverse_proxy client
     }
 }

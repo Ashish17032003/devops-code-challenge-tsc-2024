@@ -4,14 +4,16 @@ volumes:
 services:
   client:
     #image: client
-    build: ./client
+    build:
+      context: ./client/
+      dockerfile: Dockerfile
     # ports:
     #   - "80:80"
     networks:
       - myNetwork
     environment:
       - CERN_RESTAURANT_CLIENT_PORT=80
-      - CERN_RESTAURANT_CLIENT_PREFIX=/app
+      - CERN_RESTAURANT_CLIENT_PREFIX=/client
       - VITE_BACKEND_URL=https://localhost/api/
     volumes:
       - ./client:/workspace/
@@ -19,7 +21,7 @@ services:
     command: ["npm", "run", "dev"]
 
   backend:
-    image: backend
+    # image: backend
     build:
       context: .
       dockerfile: ./Dockerfile
